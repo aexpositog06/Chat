@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Chat</title>
+	<link type="text/css" rel="stylesheet" href="css/estilo.css" />
+</head>
+
+<body>
+	<div id="contenedor">
+		<div id="alias">
+			<label for="nickname">Autor:</label>
+			<input type="text" name="nickname" id="nickname" maxlength="30" size="30">
+		</div>
+		<div id="menu">
+			<p class="saludo">Bienvenido, <b><span id="autor"></span></b></p>
+			<p class="salida"><a id="salir" href="#">Salir del Chat</a></p>
+			<div style="clear:both"></div>
+		</div>
+		<div id="entrada"></div>
+		<form name="frmmensaje" action="">
+			<input name="mensaje" type="text" id="mensaje" size="63" maxlength="255" required />
+			<input name="enviar" type="submit" value="Enviar" />
+		</form>
+	</div>
+	<script>
+
+		document.addEventListener("DOMContentLoaded", function(){
+
+			let usuario="";
+			let nombre= document.getElementById("nickname");
+			let autorSpan= document.getElementById("autor");
+			let aliasDiv= document.getElementById("alias");
+			let entradaDiv= document.getElementById("entrada");
+			let mensajeInput= document.getElementById("mensaje");
+			let form= document.forms["frmmensaje"];
+			let salirLink= document.getElementById("salir");
+			let activo= false;
+
+			nombre.addEventListener("keypress", function (e) {
+				if (e.key === "Enter" && nombre.value !== "") {
+					activo="true";
+					usuario= nombre.value;
+					autorSpan.textContent= usuario;
+					aliasDiv.style.display="none";
+					mensajeInput.focus();
+					cargarMensajes();
+					setInterval(cargarMensajes, 2000);
+				}
+			});
+
+			form.addEventListener("submit", function (e) {
+				e.preventDefault();
+				if (usuario === "" && activo !="false") {
+					return;
+				}
+				let mensaje= mensajeInput.value;
+				if (mensaje === "" && activo !="false") {
+					return;
+				}
+				let datos = {
+					autor: usuario,
+					mensaje: mensaje
+				};
+				let xhr = new XMLHttpRequest();
+				xhr.open("POST", "insertar.php", true);
+				xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+				xhr.onreadystatechange= function() {
+					if ( xhr.readyState === 4 && xhr.status === 200) {
+						if (xhr.responseText === "1") {
+							mensajeInput.value= "";
+							mensajeInput.focus();
+							cargarMensajes();
+						}
+					}
+				};
+
+				xhr.send("mensa=" + JSON.stringify(datos));
+
+			});
+
+			function cargarMensajes(){
+				if(activo !="false"){
+				let xhr= new XMLHttpRequest();
+				xhr.open("GET", "leer.php", true);
+				xhr.onreadystatechange= function() {
+					if (xhr.readyState === 4 && xhr.status === 200) {
+						let datos= JSON.parse(xhr.responseText);
+						let html= "";
+
+						for (let i = 0; i< datos.length; i++) {
+							let msg = datos[i];
+							let fecha= new Date(msg.fecha+ 1000);
+							let fechaTexto= fecha.toLocaleString();
+
+							html += "<div>";
+							html += "<b>" + msg.autor + ":"+ " </b>" + msg.mensaje + " -" + " <small>" + "<b>" + fechaTexto + "</b>" + "</small>";
+							html += "</div>";
+						}
+						entradaDiv.innerHTML=html;
+					}
+				};
+
+				xhr.send();
+			}
+		}
+
+		salirLink.addEventListener("click", function (){
+			if(usuario != "" && activo !="false") {
+				ventanaModal();
+				usuario= "";
+				autorSpan.textContent= "";
+				aliasDiv.style.display= "block";
+				entradaDiv.innerHTML= "";
+				cargarMensajes();
+				activo="false";
+			}
+		});
+
+	});
+
+
+	function ventanaModal() {
+		let ventana= document.createElement("div");
+		ventana.id="modal";
+		ventana.style.position="fixed";
+		ventana.style.top="0";
+		ventana.style.left="0";
+		ventana.style.width="100%";
+		ventana.style.height="100%";
+		ventana.style.backgroundColor= "rgba(0,0,0,0.5)";
+		ventana.style.display="flex";
+		ventana.style.justifyContent="center";
+		ventana.style.alignItems="center";
+
+		let contenido= document.createElement("div");
+		contenido.style.width="200px";
+		contenido.style.height="150px";
+		contenido.style.backgroundColor="white";
+		contenido.style.padding= "20px";
+		contenido.style.borderRadius= "10px";
+		contenido.style.boxShadow= "0 0 5px #000";
+		contenido.style.textAlign="center";
+		contenido.style.fontSize="20px";
+		contenido.textContent="Has salido";
+
+		let cerrar= document.createElement("div");
+		cerrar.href= "#";
+		cerrar.textContent= "Cerrar";
+		cerrar.style.display= "block";
+		cerrar.style.backgroundColor= "red";
+		cerrar.style.color= "white";
+		cerrar.style.padding="10px";
+		cerrar.style.marginTop= "30px";
+		cerrar.style.borderRadius="5px";
+		cerrar.style.cursor="pointer";
+
+		cerrar.addEventListener("click", function (e){
+			e.preventDefault();
+
+			document.body.removeChild(ventana);
+		});
+
+		contenido.appendChild(cerrar);
+		ventana.appendChild(contenido);
+		document.body.appendChild(ventana);
+	}
+	</script>
+</body>
+
+</html>
