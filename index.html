@@ -93,7 +93,7 @@
 
 						for (let i = 0; i< datos.length; i++) {
 							let msg = datos[i];
-							let fecha= new Date(msg.fecha+ 1000);
+							let fecha= new Date(msg.fecha * 1000);
 							let fechaTexto= fecha.toLocaleString();
 
 							html += "<div>";
