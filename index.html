@@ -42,7 +42,7 @@
 
 			nombre.addEventListener("keypress", function (e) {
 				if (e.key === "Enter" && nombre.value !== "") {
-					activo="true";
+					activo=true;
 					usuario= nombre.value;
 					autorSpan.textContent= usuario;
 					aliasDiv.style.display="none";
@@ -54,11 +54,11 @@
 
 			form.addEventListener("submit", function (e) {
 				e.preventDefault();
-				if (usuario === "" && activo !="false") {
+				if (usuario === "" && activo !=false) {
 					return;
 				}
 				let mensaje= mensajeInput.value;
-				if (mensaje === "" && activo !="false") {
+				if (mensaje === "" && activo !=false) {
 					return;
 				}
 				let datos = {
@@ -109,14 +109,14 @@
 		}
 
 		salirLink.addEventListener("click", function (){
-			if(usuario != "" && activo !="false") {
+			if(usuario != "" && activo !=false) {
 				ventanaModal();
 				usuario= "";
 				autorSpan.textContent= "";
 				aliasDiv.style.display= "block";
 				entradaDiv.innerHTML= "";
 				cargarMensajes();
-				activo="false";
+				activo=false;
 			}
 		});
 
